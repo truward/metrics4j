@@ -4,7 +4,7 @@ How to release
 ## Prepare the release
 
 ``
-mvn release:prepare
+mvn release:prepare -Prelease
 ``
 
 See release plugin info on apache.maven.org
