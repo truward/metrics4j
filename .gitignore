@@ -1,3 +1,7 @@
+
+# swp
+*.swp
+
 # Idea
 *.iml
 *.ipr
@@ -6,3 +10,7 @@
 
 # Maven
 target
+
+# Release plugin
+release.properties
+pom.xml.releaseBackup
