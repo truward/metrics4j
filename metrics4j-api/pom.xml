@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.truward</groupId>
     <artifactId>metrics4j</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.5</version>
   </parent>
 
   <artifactId>metrics4j-api</artifactId>
