@@ -9,7 +9,7 @@
 
   <artifactId>metrics4j-json-log</artifactId>
   <packaging>jar</packaging>
-  <name>Metrics4j JSON Log</name>
+  <name>Metrics4J JSON Log</name>
 
   <dependencies>
     <!-- Metrics API -->
