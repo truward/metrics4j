@@ -4,7 +4,7 @@
 
   <groupId>com.truward</groupId>
   <artifactId>metrics4j</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Metrics4j</name>
   <description>Root of Metrics4j project.</description>
