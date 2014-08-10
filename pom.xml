@@ -201,7 +201,6 @@
           </plugin>
 
           <!-- Generate sources and javadoc -->
-          <!-- TODO: make optional (release profile?) -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
