@@ -1,14 +1,15 @@
-package com.truward.metrics.dumper;
+package com.truward.metrics.appender;
 
 import javax.annotation.Nonnull;
+import java.io.Closeable;
 import java.util.Map;
 
 /**
- * Represents an abstraction over certain dumper that takes care about writing certain map into some storage.
+ * Represents an abstraction over certain appender that takes care about writing certain map into some storage.
  *
  * @author Alexander Shabanov
  */
-public interface MapDumper {
+public interface MapAppender extends Closeable {
 
   /**
    * Writes a map into the associated storage.

@@ -1,7 +1,8 @@
-package com.truward.metrics.json;
+package com.truward.metrics.json.integration;
 
 import com.truward.metrics.Metrics;
 import com.truward.metrics.PredefinedMetricNames;
+import com.truward.metrics.json.JsonLogMetricsCreator;
 import com.truward.metrics.reader.MetricsReader;
 import com.truward.metrics.json.reader.StandardJsonMetricsReader;
 import org.junit.After;

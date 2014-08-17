@@ -1,8 +1,8 @@
-package com.truward.metrics.json.internal.dumper;
+package com.truward.metrics.json.internal.appender;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.truward.metrics.dumper.MapDumper;
+import com.truward.metrics.appender.MapAppender;
 import com.truward.metrics.json.internal.cache.RecordCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,29 +15,46 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Jackson-based map dumper.
- * UTF-8 encoding is used to write JSON values to the underlying output stream.
- * <p>THIS CLASS IS NOT A PART OF THE PUBLIC API.</p>
- *
  * @author Alexander Shabanov
  */
-public class JacksonMapDumper implements MapDumper {
-  private final OutputStream outputStream;
-  private final JsonFactory factory = new JsonFactory();
-  private final RecordCache recordCache;
-  private final Object lock = new Object();
-  private final Logger log = LoggerFactory.getLogger(getClass());
+public abstract class AbstractJacksonMapAppender implements MapAppender {
+  protected final JsonFactory factory = new JsonFactory();
+  protected final RecordCache recordCache;
+  protected final Object lock = new Object();
+  protected final Logger log = LoggerFactory.getLogger(getClass());
+  private volatile boolean closed = false;
 
-  public JacksonMapDumper(@Nonnull OutputStream outputStream, @Nonnull RecordCache recordCache) {
+  public AbstractJacksonMapAppender(@Nonnull RecordCache recordCache) {
     this.factory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false); // do not automatically close output stream
-    this.outputStream = outputStream;
     this.recordCache = recordCache;
   }
 
+  @Nonnull
+  protected abstract OutputStream getOutputStream();
+
+  protected void onWritePrepare() {
+  }
+
+  protected void onWriteStart() {
+  }
+
+  protected void onWriteEnd() {
+  }
+
+  protected abstract void onClose() throws IOException;
+
   @Override
-  public void write(@Nonnull Map<String, Object> properties) {
+  public final void write(@Nonnull Map<String, Object> properties) {
+    onWritePrepare();
     synchronized (lock) {
+      if (closed) {
+        throw new IllegalStateException("Unable to write: object has been already closed");
+      }
+
+      onWriteStart();
       try {
+        final OutputStream outputStream = getOutputStream();
+
         // write json and close json generator
         try (final JsonGenerator generator = factory.createGenerator(outputStream)) {
           writeValue(generator, properties);
@@ -46,6 +63,8 @@ public class JacksonMapDumper implements MapDumper {
         outputStream.write('\n');
       } catch (IOException e) {
         log.error("Error while writing map={}", properties, e);
+      } finally {
+        onWriteEnd();
       }
     }
 
@@ -53,7 +72,7 @@ public class JacksonMapDumper implements MapDumper {
   }
 
   @Override
-  public void reportDuplicateEntry(@Nonnull Map<String, Object> source, @Nonnull String key) {
+  public final void reportDuplicateEntry(@Nonnull Map<String, Object> source, @Nonnull String key) {
     if (!log.isErrorEnabled()) {
       return;
     }
@@ -61,6 +80,18 @@ public class JacksonMapDumper implements MapDumper {
     final Exception e = new Exception();
     e.fillInStackTrace(); // add stacktrace, so this error will be easily recognizable in the logs
     log.error("Duplicate entry with name={} in metrics={}", key, source, e);
+  }
+
+  @Override
+  public final void close() throws IOException {
+    synchronized (lock) {
+      if (closed) {
+        throw new IllegalStateException("Already closed");
+      }
+
+      onClose();
+      closed = true;
+    }
   }
 
   private static void writeMap(@Nonnull JsonGenerator jg, @Nonnull Map<String, Object> map) throws IOException {

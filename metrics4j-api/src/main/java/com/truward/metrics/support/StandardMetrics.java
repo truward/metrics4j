@@ -1,7 +1,7 @@
 package com.truward.metrics.support;
 
 import com.truward.metrics.Metrics;
-import com.truward.metrics.dumper.MapDumper;
+import com.truward.metrics.appender.MapAppender;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -14,16 +14,16 @@ import java.util.Map;
  * @author Alexander Shabanov
  */
 public class StandardMetrics implements Metrics {
-  private MapDumper mapDumper;
+  private MapAppender mapAppender;
   private Map<String, Object> properties;
 
-  public StandardMetrics(@Nonnull Map<String, Object> properties, @Nonnull MapDumper mapDumper) {
+  public StandardMetrics(@Nonnull Map<String, Object> properties, @Nonnull MapAppender mapAppender) {
     this.properties = properties;
-    this.mapDumper = mapDumper;
+    this.mapAppender = mapAppender;
   }
 
-  public StandardMetrics(@Nonnull MapDumper mapDumper) {
-    this(new HashMap<String, Object>(20), mapDumper);
+  public StandardMetrics(@Nonnull MapAppender mapAppender) {
+    this(new HashMap<String, Object>(20), mapAppender);
   }
 
   @Override
@@ -73,12 +73,12 @@ public class StandardMetrics implements Metrics {
 
   @Override
   public void close() {
-    final MapDumper dumper = mapDumper;
-    if (dumper == null) {
+    final MapAppender appender = mapAppender;
+    if (appender == null) {
       throw new IllegalStateException("Metrics instance has been already closed.");
     }
-    mapDumper = null;
-    dumper.write(properties);
+    mapAppender = null;
+    appender.write(properties);
     properties = null;
   }
 
@@ -96,7 +96,7 @@ public class StandardMetrics implements Metrics {
     }
 
     if (properties.put(name, value) != null) {
-      mapDumper.reportDuplicateEntry(properties, name);
+      mapAppender.reportDuplicateEntry(properties, name);
     }
   }
 }

@@ -2,10 +2,12 @@ package com.truward.metrics.json;
 
 import com.truward.metrics.Metrics;
 import com.truward.metrics.MetricsCreator;
-import com.truward.metrics.dumper.MapDumper;
+import com.truward.metrics.appender.MapAppender;
+import com.truward.metrics.json.internal.appender.JacksonMapAppender;
+import com.truward.metrics.json.internal.appender.RollingJacksonMapAppender;
 import com.truward.metrics.json.internal.cache.EmptyRecordCache;
 import com.truward.metrics.json.internal.cache.RecordCache;
-import com.truward.metrics.json.internal.dumper.JacksonMapDumper;
+import com.truward.metrics.json.settings.TimeBasedRollingLogSettings;
 import com.truward.metrics.support.StandardMetrics;
 
 import javax.annotation.Nonnull;
@@ -19,13 +21,11 @@ import java.util.Map;
  */
 public class JsonLogMetricsCreator implements MetricsCreator, Closeable {
 
-  private MapDumper mapDumper;
-  private OutputStream outputStream;
+  private volatile MapAppender mapAppender;
   private RecordCache recordCache;
 
   public JsonLogMetricsCreator(@Nonnull OutputStream outputStream, @Nonnull RecordCache recordCache) {
-    this.outputStream = outputStream;
-    this.mapDumper = createMapDumper(outputStream, recordCache);
+    this.mapAppender = createMapDumper(outputStream, recordCache);
     this.recordCache = recordCache;
   }
 
@@ -37,10 +37,23 @@ public class JsonLogMetricsCreator implements MetricsCreator, Closeable {
     this(new BufferedOutputStream(new FileOutputStream(file, true), 4096));
   }
 
+  public JsonLogMetricsCreator(@Nonnull String fileName) throws FileNotFoundException {
+    this(new File(fileName));
+  }
+
+  public JsonLogMetricsCreator(@Nonnull TimeBasedRollingLogSettings settings, @Nonnull RecordCache recordCache) {
+    this.mapAppender = new RollingJacksonMapAppender(settings, recordCache);
+    this.recordCache = recordCache;
+  }
+
+  public JsonLogMetricsCreator(@Nonnull TimeBasedRollingLogSettings settings) {
+    this(settings, EmptyRecordCache.getInstance());
+  }
+
   @Nonnull
   @Override
   public Metrics create() {
-    if (mapDumper == null) {
+    if (mapAppender == null) {
       throw new IllegalStateException("Can't create metric instance: output stream has been closed");
     }
     if (recordCache == null) {
@@ -51,10 +64,10 @@ public class JsonLogMetricsCreator implements MetricsCreator, Closeable {
     final Map<String, Object> cachedProperties = recordCache.fetch();
     if (cachedProperties != null) {
       assert cachedProperties.isEmpty();
-      return new StandardMetrics(cachedProperties, mapDumper);
+      return new StandardMetrics(cachedProperties, mapAppender);
     }
 
-    return new StandardMetrics(mapDumper);
+    return new StandardMetrics(mapAppender);
   }
 
   /**
@@ -66,18 +79,18 @@ public class JsonLogMetricsCreator implements MetricsCreator, Closeable {
    */
   @Override
   public void close() throws IOException {
-    mapDumper = null;
-    recordCache = null;
-
-    if (outputStream != null) {
-      outputStream.close();
-      outputStream = null;
+    final MapAppender appender = mapAppender;
+    if (appender != null) {
+      appender.close();
     }
+    mapAppender = null;
+
+    recordCache = null;
   }
 
   // Visible For Tests
   @Nonnull
-  protected MapDumper createMapDumper(@Nonnull OutputStream outputStream, @Nonnull RecordCache recordCache) {
-    return new JacksonMapDumper(outputStream, recordCache);
+  protected MapAppender createMapDumper(@Nonnull OutputStream outputStream, @Nonnull RecordCache recordCache) {
+    return new JacksonMapAppender(outputStream, recordCache);
   }
 }
