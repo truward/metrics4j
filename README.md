@@ -12,12 +12,12 @@ Add into your ```pom.xml``` dependencies on ``metrics4j-api`` and ``metrics4j-js
 
 ```xml
 <dependency>
-  <groupId>com.truward</groupId>
+  <groupId>com.truward.metrics</groupId>
   <artifactId>metrics4j-api</artifactId>
   <version>${metrics4j.version}</version>
 </dependency>
 <dependency>
-  <groupId>com.truward</groupId>
+  <groupId>com.truward.metrics</groupId>
   <artifactId>metrics4j-api</artifactId>
   <version>${metrics4j.version}</version>
 </dependency>
@@ -25,13 +25,22 @@ Add into your ```pom.xml``` dependencies on ``metrics4j-api`` and ``metrics4j-js
 
 For ``metrics4j.version`` variable pick latest release version of metrics4j artifacts.
  
-In java code:
+In initialization code (e.g. in DI container):
 
 ```java
-// initialize metrics factory
+// initialize metrics factory:
 MetricsCreator metricsCreator = new JsonLogMetricsCreator(new File("log/metrics.json.log"));
- 
-// ...
+
+// - or - initialize rolling metrics appender:
+MetricsCreator metricsCreator = new JsonLogMetricsCreator(TimeBasedRollingLogSettings.newBuilder()
+  .setFileNameBase("/tmp/my-app-metrics")
+  .setCompressionType(CompressionType.GZIP)
+  .setTimeDeltaMillis(60 * 60 * 1000L) // 1 hour, in milliseconds
+  .build());
+```
+
+Then in some data-processing code:
+```java 
 // around certain block
 try (final Metrics metrics = metricsCreator.create()) {
   metrics.put(PredefinedMetricName.ORIGIN, "addTwoNumbers");
