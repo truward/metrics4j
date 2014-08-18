@@ -28,6 +28,15 @@ The resultant file with metrics record might be formatted as JSON. Its structure
 {"origin": "BankingService.transferMoney", "amount": 400, "currency": "USD", "startTime": 1245000000, "timeDelta": 109}
 ```
 
+or
+
+```json
+{"origin": "UserService.registerUser.checkRegistrationData", "startTime": 2010, "timeDelta": 20}
+{"origin": "UserService.registerUser.addUserEntry", "startTime": 2030, "timeDelta": 15}
+{"origin": "UserService.registerUser", "succeeded": true, "startTime": 2005, "timeDelta": 60}
+{"origin": "POST /user/register", "startTime": 2000, "timeDelta": 70}
+```
+
 There are certain predefined value names which SHOULD be associated with the corresponding
 values in the metrics structure. 
 Such names and corresponding types are defined in ``com.truward.metrics.PredefinedMetricNames``:
@@ -124,7 +133,7 @@ final long timeDelta = System.currentTimeMillis() - startTime;
   
 // add time metric entries
 metrics.put(PredefinedMetricName.START_TIME, startTime);
-metrics.put(PredefinedMetricName.TIME_DELTA, System.currentTimeMillis() - startTime);
+metrics.put(PredefinedMetricName.TIME_DELTA, timeDelta);
   
 metrics.close();
 ```

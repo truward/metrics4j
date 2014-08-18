@@ -1,7 +1,7 @@
 package com.truward.metrics.json.internal.appender;
 
 import com.truward.metrics.json.internal.cache.RecordCache;
-import com.truward.metrics.json.internal.time.TimeService;
+import com.truward.metrics.time.TimeService;
 import com.truward.metrics.json.settings.CompressionType;
 import com.truward.metrics.json.settings.TimeBasedRollingLogSettings;
 
