@@ -14,6 +14,12 @@ $ mvn release:clean release:prepare -P release
 $ mvn release:perform -P release
 ``
 
+In case of 'Peer not authenticated' error try
+
+``
+mvn -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true release:perform -P release
+``
+
 ### Set version
 
 This should be used to set new version for all the projects.
