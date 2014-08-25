@@ -5,13 +5,29 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
+ * Represents a factory class that creates metrics object that logs nothing.
+ * This object is useful for null safe code which should be able to work with non-loggable metrics.
+ *
  * @author Alexander Shabanov
  */
 public final class NullMetricsCreator implements MetricsCreator {
+
+  /**
+   * Static instance of the null metrics object. This instance is returned from
+   * {@link NullMetricsCreator#create()} method.
+   */
+  public static final Metrics NULL_METRICS = new NullMetrics();
+
+  /**
+   * Returns special metrics instance that does nothing on closing.
+   * See also {@link #NULL_METRICS}.
+   *
+   * {@inheritDoc}
+   */
   @Nonnull
   @Override
   public Metrics create() {
-    return new NullMetrics();
+    return NULL_METRICS;
   }
 
   //
@@ -19,7 +35,6 @@ public final class NullMetricsCreator implements MetricsCreator {
   //
 
   private static final class NullMetrics implements Metrics {
-    private volatile boolean closed = false;
 
     @Override
     public void put(@Nonnull String name, boolean value) {
@@ -67,11 +82,8 @@ public final class NullMetricsCreator implements MetricsCreator {
     }
 
     @Override
-    public synchronized void close() {
-      if (closed) {
-        throw new IllegalStateException();
-      }
-      closed = true;
+    public void close() {
+      // do nothing
     }
   }
 }
