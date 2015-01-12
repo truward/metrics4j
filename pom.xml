@@ -7,7 +7,7 @@
   <version>1.0.10-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Metrics4J</name>
-  <url>http://dp4j.com</url>
+  <url>https://github.com/truward/metrics4j</url>
 
   <description>Root of Metrics4j project.</description>
 
